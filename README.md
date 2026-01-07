@@ -29,10 +29,6 @@ Este é um projeto desenvolvido para fins de estudo, focado na manipulação de 
    ## 📸 Demonstração da Interface
 ![Demonstração do Menu](imagem/menu.png)
 
-## 🖼️ Demonstração do Projeto
-
-### Versão Desktop (Tkinter)
-![Interface Desktop](interface_desktop.png)
 
 ### Versão Web (Streamlit)
 ![Interface Web](interface_web.png)
