@@ -43,4 +43,4 @@ with aba_listar:
         df_alunos['status'] = df_alunos['nota'].apply(lambda x: "✅ Aprovado" if x >= 7 else "❌ Reprovado")
         st.dataframe(df_alunos) # Mostra uma tabela interativa
     else:   
-        st.info("Nenhum aluno cadastrado.") # Esta linha DEVE estar recuada para a direita
+        st.info("Nenhum aluno cadastrado.") # Esta linha DEVE estar recuada para a direita  '

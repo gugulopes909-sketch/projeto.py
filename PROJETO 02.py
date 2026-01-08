@@ -108,4 +108,10 @@ tk.Button(janela, text="Limpar", command=limpar_tela).pack(pady=5)
 resultado = tk.Label(janela, text="Aguardando ação...", justify="left")
 resultado.pack(pady=20)
 
+# ... (todo o seu código anterior aqui) ...
+
+if __name__ == "__main__":
+    carregar_alunos() # Garante que os dados carreguem ao abrir
+    janela.mainloop() # Inicia a interface gráfica
+
 janela.mainloop() 
