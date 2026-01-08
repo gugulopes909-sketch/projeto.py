@@ -29,20 +29,41 @@ def salvar_alunos():
             escritor.writerow([aluno["nome"], aluno["idade"], aluno["nota"]])
 
 # --- 2. FUNÇÕES DE LÓGICA ---
+
 def cadastrar_aluno():
     try:
-        nome = entrada_nome.get()
-        idade = int(entrada_idade.get())
-        nota = float(entrada_nota.get())
+        nome = entrada_nome.get().strip() # .strip() remove espaços vazios antes/depois
+        idade_str = entrada_idade.get()
+        nota_str = entrada_nota.get()
+
+        # Validação básica: não aceitar nome vazio
+        if not nome:
+            messagebox.showwarning("Atenção", "O campo 'Nome' não pode estar vazio!")
+            return
+
+        # --- NOVA LÓGICA: VERIFICAÇÃO DE DUPLICADOS ---
+        # Percorre a lista de alunos e compara os nomes em letras minúsculas
+        for aluno in alunos:
+            if aluno["nome"].lower() == nome.lower():
+                messagebox.showwarning("Erro", f"O aluno '{nome}' já está cadastrado!")
+                return # Para a função aqui e não cadastra
+        # ----------------------------------------------
+
+        idade = int(idade_str)
+        nota = float(nota_str)
         
         novo_aluno = {"nome": nome, "idade": idade, "nota": nota}
         alunos.append(novo_aluno)
-        salvar_alunos()
-        
+        salvar_alunos() # Salva no CSV imediatamente
+    
         messagebox.showinfo("Sucesso", f"Aluno {nome} cadastrado!")
         limpar_tela()
+        listar_alunos() # Atualiza a lista na tela automaticamente
+
     except ValueError:
         messagebox.showerror("Erro", "Idade e Nota precisam ser números!")
+
+
 
 def listar_alunos():
     texto = "--- LISTA DE ALUNOS ---\n"
@@ -87,4 +108,4 @@ tk.Button(janela, text="Limpar", command=limpar_tela).pack(pady=5)
 resultado = tk.Label(janela, text="Aguardando ação...", justify="left")
 resultado.pack(pady=20)
 
-janela.mainloop()
+janela.mainloop() 
