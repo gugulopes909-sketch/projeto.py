@@ -9,10 +9,9 @@ alunos = []
 
 def carregar_alunos():
     global alunos
-    alunos = [] # Limpa a lista antes de carregar
+    alunos = []
     if os.path.exists(ARQUIVO):
         with open(ARQUIVO, "r", encoding="utf-8") as arquivo:
-            # Corrigido: csv.DictReader (D maiúsculo e sem ponto extra)
             leitor = csv.DictReader(arquivo)
             for linha in leitor:
                 alunos.append({
@@ -32,38 +31,76 @@ def salvar_alunos():
 
 def cadastrar_aluno():
     try:
-        nome = entrada_nome.get().strip() # .strip() remove espaços vazios antes/depois
-        idade_str = entrada_idade.get()
-        nota_str = entrada_nota.get()
-
-        # Validação básica: não aceitar nome vazio
+        nome = entrada_nome.get().strip()
         if not nome:
             messagebox.showwarning("Atenção", "O campo 'Nome' não pode estar vazio!")
             return
 
-        # --- NOVA LÓGICA: VERIFICAÇÃO DE DUPLICADOS ---
-        # Percorre a lista de alunos e compara os nomes em letras minúsculas
         for aluno in alunos:
             if aluno["nome"].lower() == nome.lower():
                 messagebox.showwarning("Erro", f"O aluno '{nome}' já está cadastrado!")
-                return # Para a função aqui e não cadastra
-        # ----------------------------------------------
+                return
 
-        idade = int(idade_str)
-        nota = float(nota_str)
+        idade = int(entrada_idade.get())
+        nota = float(entrada_nota.get())
         
-        novo_aluno = {"nome": nome, "idade": idade, "nota": nota}
-        alunos.append(novo_aluno)
-        salvar_alunos() # Salva no CSV imediatamente
-    
+        if nota < 0 or nota > 10:
+            messagebox.showwarning("Nota Inválida", "A nota deve ser entre 0 e 10!")
+            return
+
+        alunos.append({"nome": nome, "idade": idade, "nota": nota})
+        salvar_alunos()
         messagebox.showinfo("Sucesso", f"Aluno {nome} cadastrado!")
         limpar_tela()
-        listar_alunos() # Atualiza a lista na tela automaticamente
-
+        listar_alunos()
     except ValueError:
         messagebox.showerror("Erro", "Idade e Nota precisam ser números!")
 
+def remover_aluno():
+    nome_busca = entrada_nome.get().strip().lower()
+    if not nome_busca:
+        messagebox.showwarning("Atenção", "Digite o nome do aluno para remover!")
+        return
 
+    for i, aluno in enumerate(alunos):
+        if aluno["nome"].lower() == nome_busca:
+            alunos.pop(i)
+            salvar_alunos()
+            listar_alunos()
+            messagebox.showinfo("Sucesso", "Aluno removido!")
+            limpar_tela()
+            return
+    messagebox.showwarning("Erro", "Aluno não encontrado!")
+
+def editar_nota():
+    nome_busca = entrada_nome.get().strip().lower()
+    try:
+        nova_nota = float(entrada_nota.get())
+        if nova_nota < 0 or nova_nota > 10:
+            messagebox.showwarning("Nota Inválida", "A nota deve ser entre 0 e 10!")
+            return
+
+        for aluno in alunos:
+            if aluno["nome"].lower() == nome_busca:
+                aluno["nota"] = nova_nota
+                salvar_alunos()
+                listar_alunos()
+                messagebox.showinfo("Sucesso", "Nota atualizada!")
+                return
+        messagebox.showwarning("Erro", "Aluno não encontrado!")
+    except ValueError:
+        messagebox.showerror("Erro", "Digite uma nota válida para editar!")
+
+def mostrar_estatisticas():
+    if not alunos:
+        messagebox.showwarning("Atenção", "Não há alunos cadastrados!")
+        return
+    notas = [aluno["nota"] for aluno in alunos]
+    media = sum(notas) / len(notas)
+    melhor_aluno = max(alunos, key=lambda x: x["nota"])
+    
+    mensagem = f"Média Geral: {media:.2f}\nMelhor Aluno: {melhor_aluno['nome']} ({melhor_aluno['nota']})"
+    messagebox.showinfo("Estatísticas", mensagem)
 
 def listar_alunos():
     texto = "--- LISTA DE ALUNOS ---\n"
@@ -80,14 +117,12 @@ def limpar_tela():
     entrada_nome.focus()
 
 # --- 3. INTERFACE GRÁFICA ---
-carregar_alunos()
-
 janela = tk.Tk()
-janela.title("Sistema Escolar v1.0")
-janela.geometry("400x500")
+janela.title("Sistema Escolar Pro")
+janela.geometry("450x600")
 
-# Elementos da Tela
-tk.Label(janela, text="Nome:").pack(pady=2)
+# Entradas
+tk.Label(janela, text="Nome do Aluno:").pack(pady=2)
 entrada_nome = tk.Entry(janela)
 entrada_nome.pack()
 
@@ -99,19 +134,21 @@ tk.Label(janela, text="Nota:").pack(pady=2)
 entrada_nota = tk.Entry(janela)
 entrada_nota.pack()
 
-# Botões
-tk.Button(janela, text="Cadastrar", command=cadastrar_aluno, bg="green", fg="white").pack(pady=5)
-tk.Button(janela, text="Listar Alunos", command=listar_alunos, bg="blue", fg="white").pack(pady=5)
-tk.Button(janela, text="Limpar", command=limpar_tela).pack(pady=5)
+# Container para botões (Organização em Grade)
+frame_botoes = tk.Frame(janela)
+frame_botoes.pack(pady=10)
 
-# Painel de Resultado
-resultado = tk.Label(janela, text="Aguardando ação...", justify="left")
+# Botões organizados (Linha, Coluna)
+tk.Button(frame_botoes, text="Cadastrar", command=cadastrar_aluno, bg="green", fg="white", width=15).grid(row=0, column=0, padx=5, pady=5)
+tk.Button(frame_botoes, text="Listar", command=listar_alunos, bg="blue", fg="white", width=15).grid(row=0, column=1, padx=5, pady=5)
+tk.Button(frame_botoes, text="Editar Nota", command=editar_nota, bg="orange", width=15).grid(row=1, column=0, padx=5, pady=5)
+tk.Button(frame_botoes, text="Estatísticas", command=mostrar_estatisticas, bg="purple", fg="white", width=15).grid(row=1, column=1, padx=5, pady=5)
+tk.Button(frame_botoes, text="Remover", command=remover_aluno, bg="red", fg="white", width=15).grid(row=2, column=0, padx=5, pady=5)
+tk.Button(frame_botoes, text="Limpar", command=limpar_tela, width=15).grid(row=2, column=1, padx=5, pady=5)
+
+resultado = tk.Label(janela, text="Aguardando ação...", justify="left", font=("Arial", 10))
 resultado.pack(pady=20)
 
-# ... (todo o seu código anterior aqui) ...
-
 if __name__ == "__main__":
-    carregar_alunos() # Garante que os dados carreguem ao abrir
-    janela.mainloop() # Inicia a interface gráfica
-
-janela.mainloop() 
+    carregar_alunos()
+    janela.mainloop() 
